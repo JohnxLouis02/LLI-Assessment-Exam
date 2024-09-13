@@ -20,6 +20,7 @@ import { MdDelete } from 'react-icons/md'
 import FilesNone from '../assets/FilesNone.png'
 import axios from 'axios'
 import dayjs from 'dayjs';
+import Facultyprint from '../components/facultyprint'
 
 
 const { Option } = Select
@@ -77,13 +78,13 @@ const Dashboard = () => {
 	}
 
 	// Utility function to format birthday
-	const formatBirthday = (birthday) => {
-		if (!birthday) return 'No Birthday'
+		const formatBirthday = (birthday) => {
+			if (!birthday) return 'No Birthday'
 
-		const date = new Date(birthday)
-		const options = { month: 'long', day: 'numeric', year: 'numeric' }
-		return date.toLocaleDateString('en-US', options)
-	}
+			const date = new Date(birthday)
+			const options = { month: 'long', day: 'numeric', year: 'numeric' }
+			return date.toLocaleDateString('en-US', options)
+		}
 
 	const calculateAge = (birthday) => {
 		if (!birthday) return 'No Age'
@@ -158,7 +159,7 @@ const Dashboard = () => {
 					<div className="flex border justify-center items-center gap-2 h-fit p-2 rounded-md">
 						<div className="flex flex-col text-center">
 							<div className="text-sm">
-								Hello, <span> User</span>
+								Hello, <span> email</span>
 							</div>
 							<small className="text-gray-600 font-semibold">Admin</small>
 						</div>
@@ -169,8 +170,9 @@ const Dashboard = () => {
 					</div>
 				</div>
 				{/* Add Faculty */}
-				<div className="mt-2">
-					<AddFaculty />
+				<div className="mt-2 flex justify-end gap-4">
+					<Facultyprint faculty={data}/>
+					<AddFaculty  />
 				</div>
 				{/* Body */}
 				<div className="pt-0 p-2 mt-3">
