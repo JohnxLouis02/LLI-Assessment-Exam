@@ -16,7 +16,7 @@ const Register = () => {
 		}
 
 		try {
-			// Send POST request to the backend to register the user
+			//  POST request to the backend to register the user
 			const response = await axios.post('http://localhost:3000/register', {
 				email,
 				password,
@@ -24,7 +24,7 @@ const Register = () => {
 
 			if (response.data.success) {
 				message.success('Registration successful! Redirecting to login page...')
-				navigate('/login') // Redirect to login page after successful registration
+				navigate('/login') 
 			} else {
 				message.error(response.data.message || 'Registration failed!')
 			}

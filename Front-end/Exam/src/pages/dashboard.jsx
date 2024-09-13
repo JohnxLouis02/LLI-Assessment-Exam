@@ -11,6 +11,8 @@ import {
 	message,
 	Popconfirm,
 	Radio,
+	notification,
+	Tooltip,
 } from 'antd'
 import { FaUserCircle } from 'react-icons/fa'
 import { MdLogout } from 'react-icons/md'
@@ -21,6 +23,8 @@ import FilesNone from '../assets/FilesNone.png'
 import axios from 'axios'
 import dayjs from 'dayjs';
 import Facultyprint from '../components/facultyprint'
+import { useNavigate } from 'react-router-dom'
+
 
 
 const { Option } = Select
@@ -30,6 +34,8 @@ const Dashboard = () => {
 	const [selectedFaculty, setSelectedFaculty] = useState(null)
 	const [isEditing, setIsEditing] = useState(false)
 	const [form] = Form.useForm()
+	const navigate = useNavigate()
+	const [userEmail, setUserEmail] = useState('')
 	useEffect(() => {
 		axios
 			.get('http://localhost:3000/Faculty')
@@ -41,6 +47,27 @@ const Dashboard = () => {
 			})
 	}, []) // Run once when the component mounts
 
+	useEffect(() => {
+		// Checking if the user is authenticated thru localstorage data
+		const token = localStorage.getItem('authToken')
+		const email = localStorage.getItem('userEmail')
+
+		if (!token) {
+			
+			message.error('You are not logged in')
+			navigate('/login') 
+		} else {
+			
+			// console.log('User is authenticated, token:', token)
+			 notification.success({
+					message: 'User Authenticated!',
+					description: '',
+				})
+			setUserEmail(email)
+		}
+	}, [navigate])
+
+
 	const openModal = (faculty) => {
 		setSelectedFaculty(faculty)
 		setIsEditing(false) // Set to view mode by default
@@ -49,7 +76,7 @@ const Dashboard = () => {
 	const closeModal = () => {
 		setSelectedFaculty(null)
 	}
-
+	// color coding for the college and status
 	function getTagColor(value, type) {
 		switch (type) {
 			case 'department':
@@ -77,7 +104,7 @@ const Dashboard = () => {
 		}
 	}
 
-	// Utility function to format birthday
+	// function to format birthday
 		const formatBirthday = (birthday) => {
 			if (!birthday) return 'No Birthday'
 
@@ -116,7 +143,7 @@ const Dashboard = () => {
 						item.id === selectedFaculty.id ? { ...item, ...values } : item
 					)
 				)
-				message.success('Faculty Data Edited successfully')
+				message.success('Faculty Info Edited successfully')
 				setSelectedFaculty(null)
 				setIsEditing(false)
 			})
@@ -134,13 +161,21 @@ const Dashboard = () => {
 				setData((prevData) =>
 					prevData.filter((item) => item.id !== selectedFaculty.id)
 				)
-				message.success('Faculty Data Deleted successfully')
+				message.success('Faculty Deleted successfully')
 				setSelectedFaculty(null)
-				 window.location.reload()
 			})
 			.catch((error) => {
 				console.error('Error deleting faculty data:', error)
 			})
+	}
+
+	const handleLogout = () => {
+		// Remove authentication data from localStorage
+		localStorage.removeItem('authToken')
+		localStorage.removeItem('userEmail')
+		message.success("Logged out successfully")
+		// Redirect to login page
+		navigate('/login')
 	}
 
 	return (
@@ -156,20 +191,21 @@ const Dashboard = () => {
 							</div>
 						</div>
 					</div>
-					<div className="flex border justify-center items-center gap-2 h-fit p-2 rounded-md">
+					<div className="flex justify-center items-center gap-2 h-fit p-2">
 						<div className="flex flex-col text-center">
-							<div className="text-sm">
-								Hello, <span> email</span>
+							<div className="text-sm font-medium">
+								Hello, <span className='hover:underline'>{userEmail}</span>
 							</div>
 							<small className="text-gray-600 font-semibold">Admin</small>
 						</div>
-						<button className="border p-2 rounded-full h-fit flex items-center gap-1">
-							{/* <span>logout</span> */}
+						<Tooltip title="Logout">
+						<button onClick={handleLogout} className="border p-2 rounded-full h-fit flex items-center gap-1 hover:bg-gray-400 hover:text-white ease-in">
 							<MdLogout />
 						</button>
+						</Tooltip>
 					</div>
 				</div>
-				{/* Add Faculty */}
+				{/* Add Faculty and Faculty Print */}
 				<div className="mt-2 flex justify-end gap-4">
 					<Facultyprint faculty={data}/>
 					<AddFaculty  />

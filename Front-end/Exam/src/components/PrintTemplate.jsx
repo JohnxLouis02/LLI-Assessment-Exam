@@ -62,10 +62,10 @@ const PrintTemplate = ({ faculty }) => {
 		return today.toLocaleDateString('en-US', options)
 	}
 
-	// Slice the data to include only the last 8 entries
-	const lastEightFaculty = faculty.slice(-8)
+	
+	const Facultycount = faculty.slice(-20)
 
-	// Define columns for the Table
+	
 	const columns = [
 		{
 			title: 'Name',
@@ -126,7 +126,7 @@ const PrintTemplate = ({ faculty }) => {
 
 	return (
 		<div>
-			{lastEightFaculty.length === 0 ? (
+			{Facultycount.length === 0 ? (
 				<p>No faculty data available</p>
 			) : (
 				<div className=" print_style">
@@ -136,13 +136,16 @@ const PrintTemplate = ({ faculty }) => {
 							<div className="font-medium text-sm">
 								University Faculty Management System
 							</div>
-                            <p className='text-sm'> <span className='font-medium'>Date Printed:</span> {getCurrentDate()}</p>
+							<p className="text-sm">
+								{' '}
+								<span className="font-medium">Date Printed:</span>{' '}
+								{getCurrentDate()}
+							</p>
 						</div>
-						
 					</div>
 					<div className="border">
 						<Table
-							dataSource={lastEightFaculty}
+							dataSource={Facultycount}
 							columns={columns}
 							pagination={false}
 							rowKey="id" // Assuming each faculty has a unique 'id' field

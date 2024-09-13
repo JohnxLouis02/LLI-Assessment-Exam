@@ -44,12 +44,11 @@ app.get('/Users', async (req, res) => {
 })
 
 // Route to authenticate users
-// Route to authenticate users
 app.post('/login', async (req, res) => {
 	const { email, password } = req.body
 
 	try {
-		// Step 1: Fetch user from the database by email
+		
 		let pool = await sql.connect(config)
 		let result = await pool
 			.request()
@@ -65,7 +64,7 @@ app.post('/login', async (req, res) => {
 
 		const user = result.recordset[0]
 
-		// Step 2: Compare the input password with the stored hashed password
+		
 		const isMatch = await bcrypt.compare(password, user.Password)
 
 		if (!isMatch) {
@@ -115,7 +114,7 @@ app.post('/register', async (req, res) => {
 		// Hash the password before storing it
 		const hashedPassword = await bcrypt.hash(password, 10)
 
-		// Insert the new user into the database
+		// Inserting the new user into the database
 		const insertUserQuery =
 			'INSERT INTO Users (email, password) VALUES (@Email, @Password)'
 		await pool
@@ -146,7 +145,7 @@ app.post('/addFaculty', async (req, res) => {
     try {
         let pool = await sql.connect(config);
 
-        // Insert the new faculty into the database
+        // Inserting the new faculty into the database
         const insertFacultyQuery = `
             INSERT INTO Faculty (name, college, status, academicStatus, birthday, gender, address)
             VALUES (@Name, @College, @Status, @AcademicStatus, @Birthday, @Gender, @Address)
@@ -173,7 +172,7 @@ app.get('/Faculty', async (req, res) => {
 		let pool = await sql.connect(config)
 		let result = await pool.request().query('SELECT * FROM Faculty')
 		res.json(result.recordset)
-		console.log('Data retrieved from the database:', result.recordset)
+		// console.log('Data retrieved from the database:', result.recordset)
 	} catch (err) {
 		console.log(err)
 		res.status(500).send('Error retrieving users')

@@ -7,20 +7,32 @@ import { useNavigate, Link } from 'react-router-dom'
 const Login = () => {
 	const navigate = useNavigate()
 	const onFinish = async (values) => {
+		const { email, password } = values 
 		try {
-			const response = await axios.post('http://localhost:3000/login', values)
-			// console.log('Success:', response.data)
+			const response = await axios.post('http://localhost:3000/login', {
+				email,
+				password,
+			})
+
 			if (response.data.success) {
+				// Generate a 6-digit random token
+				const token = Math.floor(100000 + Math.random() * 900000).toString() 
+
+				// Save the token and user data in localStorage
+				localStorage.setItem('authToken', token)
+				localStorage.setItem('userEmail', email)
+
+				 message.success('Login successful!')
 				navigate('/dashboard')
-				message.success('Login successful')
 			} else {
-				message.error('Invalid credentials')
+				message.error('Login failed. Please check your credentials.')
 			}
 		} catch (error) {
-			console.log('Failed:', error)
-			message.error('Something went wrong. Please try again later.')
+			message.error('An error occurred during login.')
 		}
 	}
+
+
 
 	const onFinishFailed = (errorInfo) => {
 		console.log('Failed:', errorInfo)

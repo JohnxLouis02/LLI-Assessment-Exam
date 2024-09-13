@@ -20,20 +20,20 @@ const AddFaculty = () => {
 	const handleSubmit = async (values) => {
 
 		try {
-			// Make a POST request using Axios to add the faculty
+			//  POST request with Axios to add the faculty
 			const response = await axios.post('http://localhost:3000/addFaculty', {
 				name: values.name,
 				college: values.college,
 				status: values.status,
 				academicStatus: values.academicStatus,
-				birthday: values.birthday, // Format the date correctly
+				birthday: values.birthday, 
 				gender: values.gender,
-				address: values.address || '', // Optional field
+				address: values.address || '', 
 			})
 
 			if (response.data.success) {
 				console.log('Faculty added successfully:', response.data.message)
-				closeModal() // Close modal after submission
+				closeModal() 
 				 window.location.reload()
 			} else {
 				console.error('Failed to add faculty:', response.data.message)

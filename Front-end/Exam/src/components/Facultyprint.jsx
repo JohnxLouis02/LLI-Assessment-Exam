@@ -24,9 +24,6 @@ const Facultyprint = ({ faculty }) => {
 				<PrintTemplate faculty={faculty} />
 			</div>
 
-      {/* <Modal>
-        
-      </Modal> */}
 		</div>
 	)
 }
