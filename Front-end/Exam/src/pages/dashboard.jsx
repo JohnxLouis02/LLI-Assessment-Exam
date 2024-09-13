@@ -89,8 +89,8 @@ const Dashboard = () => {
 	}
 
 	return (
-		<div className="min-h-screen mt-1 p-2 flex justify-center">
-			<div className="p-4 max-w-3xl flex-1 border rounded-md shadow">
+		<div className="min-h-screen p-4 flex justify-center bg-gray-300">
+			<div className="p-4 max-w-3xl flex-1 border rounded-md shadow bg-white">
 				{/* Navbar */}
 				<div className="flex justify-between gap-5">
 					<div className="pb-4 mt-2 p-2">
@@ -101,7 +101,7 @@ const Dashboard = () => {
 							</div>
 						</div>
 					</div>
-					<div className="flex border justify-center items-center gap-2 p-2">
+					<div className="flex border justify-center items-center gap-2 h-fit p-2 rounded-md">
 						<div className="flex flex-col text-center">
 							<div className="text-sm">
 								Hello, <span> User</span>
@@ -119,7 +119,7 @@ const Dashboard = () => {
 				<div className="pt-3 p-2 mt-10">
 					<p className="font-medium mb-3 ">List of Faculty</p>
 					{data.length === 0 ? (
-						<div className="text-center text-gray-500 h-64 rounded-md border-2 flex justify-center items-center">
+						<div className="text-center text-gray-500 flex justify-center items-center">
 							<p className="font-medium">No faculty profiles available....</p>
 							<small></small>
 						</div>

@@ -1,87 +1,121 @@
 import React from 'react'
-import { Button, Checkbox, Form, Input } from 'antd'
+import { Button, Checkbox, Form, Input, message } from 'antd'
 import bg from '../assets/bg_1.jpg'
+import { Link,useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const Register = () => {
-    const onFinish = (values) => {
-			console.log('Success:', values)
+	const navigate = useNavigate()
+	const onFinish = async (values) => {
+		const { email, password, c_password } = values
+
+		// Basic password matching validation
+		if (password !== c_password) {
+			message.error('Passwords do not match!')
+			return
 		}
-		const onFinishFailed = (errorInfo) => {
-			console.log('Failed:', errorInfo)
+
+		try {
+			// Send POST request to the backend to register the user
+			const response = await axios.post('http://localhost:3000/register', {
+				email,
+				password,
+			})
+
+			if (response.data.success) {
+				message.success('Registration successful! Redirecting to login page...')
+				navigate('/login') // Redirect to login page after successful registration
+			} else {
+				message.error(response.data.message || 'Registration failed!')
+			}
+		} catch (error) {
+			message.error('An error occurred. Please try again.')
+			console.log('Registration error:', error)
 		}
-  return (
-		<div className="flex justify-center flex-col items-center h-screen gap-10 sm:flex-row sm:p-0 p-4">
-			<div>
-				<img src={bg} alt="teachers" className="w-[600px] h-auto" />
-			</div>
-			<div className="border p-6 rounded-md shadow-md w-[400px]">
-				<h1 className="font-bold text-center text-xl">
-					Register to your Account{' '}
-				</h1>
-				<Form
-					className="pt-4"
-					name="basic"
-					// labelCol={{
-					// 	span: 8,
-					// }}
-					// wrapperCol={{
-					// 	span: 16,
-					// }}
+	}
 
-					initialValues={{
-						remember: true,
-					}}
-					onFinish={onFinish}
-					autoComplete="off"
-					layout="vertical"
-				>
-					<p className="font-medium mb-3">Let's setup your Account</p>
-					<Form.Item
-						label="Email"
-						name="email"
-						rules={[
-							{
-								required: true,
-								message: 'Please input your Email!',
-							},
-						]}
-					>
-						<Input />
-					</Form.Item>
+	const onFinishFailed = (errorInfo) => {
+		console.log('Failed:', errorInfo)
+	}
 
-					<Form.Item
-						label="Password"
-						name="password"
-						rules={[
-							{
-								required: true,
-								message: 'Please input your password!',
-							},
-						]}
+	return (
+		<div className="h-screen bg-gray-300 flex justify-center items-center">
+			<div className="flex justify-center items-center gap-10 bg-white p-10 rounded-md shadow-md">
+				<div>
+					<img src={bg} alt="teachers" className="w-[600px] h-auto" />
+				</div>
+				<div className="border p-6 rounded-md w-[400px]">
+					<h1 className="font-bold text-center text-xl">
+						Register to Faculty Profile{' '}
+					</h1>
+					<Form
+						className="pt-4"
+						name="basic"
+						initialValues={{
+							remember: true,
+						}}
+						onFinish={onFinish}
+						onFinishFailed={onFinishFailed}
+						autoComplete="off"
+						layout="vertical"
 					>
-						<Input.Password />
-					</Form.Item>
-					<Form.Item
-						label="Confirm Password"
-						name="c-password"
-						rules={[
-							{
-								required: true,
-								message: 'Please input your password!',
-							},
-						]}
-					>
-						<Input.Password />
-					</Form.Item>
-
-					<div className="flex justify-center">
-						<Form.Item>
-							<Button type="primary" htmlType="submit" className="w-60">
-								Submit
-							</Button>
+						<p className="font-medium mb-3">Let's Create your Account</p>
+						<Form.Item
+							label="Email"
+							name="email"
+							rules={[
+								{
+									required: true,
+									message: 'Please input your Email!',
+								},
+							]}
+						>
+							<Input />
 						</Form.Item>
-					</div>
-				</Form>
+
+						<Form.Item
+							label="Password"
+							name="password"
+							rules={[
+								{
+									required: true,
+									message: 'Please input your password!',
+								},
+							]}
+						>
+							<Input.Password />
+						</Form.Item>
+
+						<Form.Item
+							label="Confirm Password"
+							name="c_password"
+							rules={[
+								{
+									required: true,
+									message: 'Please input your password!',
+								},
+							]}
+						>
+							<Input.Password />
+						</Form.Item>
+
+						<div className="flex justify-center">
+							<Form.Item>
+								<Button type="primary" htmlType="submit" className="w-60">
+									Submit
+								</Button>
+							</Form.Item>
+						</div>
+						<div className="text-center">
+							<p>
+								Already have an Account?{' '}
+								<Link to="/login" className="hover:underline font-semibold">
+									Login here
+								</Link>
+							</p>
+						</div>
+					</Form>
+				</div>
 			</div>
 		</div>
 	)
