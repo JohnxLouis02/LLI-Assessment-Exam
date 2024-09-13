@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, Tag, Modal, Avatar,Popconfirm, Button } from 'antd'
 import { FaUserCircle } from 'react-icons/fa'
 import { MdLogout } from 'react-icons/md'
@@ -6,11 +6,23 @@ import AddFaculty from '../components/addFaculty'
 import { IoPencil } from 'react-icons/io5'
 import { MdDelete } from 'react-icons/md'
 import FilesNone from '../assets/FilesNone.png'
+import axios from 'axios'
 
-const data = [];
 
 const Dashboard = () => {
+	const [data, setData] = useState([]) // Faculty data
 	const [selectedFaculty, setSelectedFaculty] = useState(null)
+
+	useEffect(() => {
+		axios
+			.get('http://localhost:3000/Faculty')
+			.then((response) => {
+				setData(response.data) // Update the data state with fetched data
+			})
+			.catch((error) => {
+				console.error('Error fetching faculty data:', error)
+			})
+	}, []) // Run once when the component mounts
 
 	const openModal = (faculty) => {
 		setSelectedFaculty(faculty)
@@ -47,6 +59,34 @@ const Dashboard = () => {
 		}
 	}
 
+	// Utility function to format birthday
+	const formatBirthday = (birthday) => {
+		if (!birthday) return 'No Birthday'
+
+		const date = new Date(birthday)
+		const options = { month: 'long', day: 'numeric', year: 'numeric' }
+		return date.toLocaleDateString('en-US', options)
+	}
+
+	const calculateAge = (birthday) => {
+		if (!birthday) return 'No Age'
+
+		const birthDate = new Date(birthday)
+		const today = new Date()
+		const age = today.getFullYear() - birthDate.getFullYear()
+		const monthDiff = today.getMonth() - birthDate.getMonth()
+
+		// Adjust if the birthday hasn't occurred yet this year
+		if (
+			monthDiff < 0 ||
+			(monthDiff === 0 && today.getDate() < birthDate.getDate())
+		) {
+			return age - 1
+		}
+		return age
+	}
+
+
 	return (
 		<div className="min-h-screen p-4 flex justify-center bg-gray-300">
 			<div className="p-4 max-w-3xl flex-1 border rounded-md shadow bg-white">
@@ -82,7 +122,11 @@ const Dashboard = () => {
 					<p className="font-medium mb-3 ">List of Faculty</p>
 					{data.length === 0 ? (
 						<div className="text-center text-gray-500 h-64 flex justify-center items-center flex-col">
-							<img src={FilesNone} alt="teachers" className="w-[160px] h-auto" />
+							<img
+								src={FilesNone}
+								alt="teachers"
+								className="w-[160px] h-auto"
+							/>
 							<p className="font-medium">No faculty profiles available....</p>
 							<small></small>
 						</div>
@@ -100,7 +144,7 @@ const Dashboard = () => {
 									className="shadow-sm border-2"
 								>
 									<div className="gap-4">
-										<div className="flex gap-4">
+										<div className="flex gap-0 sm:flex-row flex-col sm:gap-2">
 											<div>
 												{/* Use FaUserCircle as the default icon */}
 												<Avatar
@@ -110,7 +154,9 @@ const Dashboard = () => {
 												/>
 											</div>
 											<div className="">
-												<p className="font-bold mt-2">{item.name}</p>
+												<p className="font-bold mt-2 text-ellipsis text-nowrap overflow-hidden">
+													{item.name}
+												</p>
 												<div className="flex">
 													<Tag color={getTagColor(item.college, 'department')}>
 														<small>{item.college || 'No College'}</small>
@@ -123,7 +169,7 @@ const Dashboard = () => {
 										</div>
 										<div>
 											<div className="flex text-xs pt-2">
-												<div className="flex gap-1 flex-row">
+												<div className="flex gap-1 flex-row text-[10px]">
 													<p className="font-medium">Academic Status:</p>{' '}
 													<span>
 														{item.academicStatus || 'No Academic Status'}
@@ -133,7 +179,7 @@ const Dashboard = () => {
 											<p>
 												<small>
 													<span className="font-medium">Birthday:</span>{' '}
-													{item.birthday}
+													{formatBirthday(item.birthday)}
 												</small>
 											</p>
 											<p>
@@ -231,8 +277,15 @@ const Dashboard = () => {
 							</p>
 							<p>
 								<span className="font-medium">Birthday: </span>
-								{selectedFaculty.birthday}
+								{formatBirthday(selectedFaculty.birthday)}
 							</p>
+							<p>
+								<span className="font-medium">Age: </span>
+								{selectedFaculty.birthday
+									? `${calculateAge(selectedFaculty.birthday)} years old`
+									: 'No Age'}
+							</p>
+
 							<p>
 								<span className="font-medium">Gender: </span>
 								{selectedFaculty.gender}

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button, Modal, Form, Input, Select, DatePicker, Avatar,Radio } from 'antd'
 import { IoMdAdd } from 'react-icons/io'
 import { FaUserCircle } from 'react-icons/fa'
+import axios from 'axios'
 
 const { Option } = Select
 
@@ -16,10 +17,32 @@ const AddFaculty = () => {
 		setIsModalOpen(false)
 	}
 
-	const handleSubmit = (values) => {
+	const handleSubmit = async (values) => {
 		console.log('Faculty Details:', values)
-		closeModal() // Close modal after submission
+
+		try {
+			// Make a POST request using Axios to add the faculty
+			const response = await axios.post('http://localhost:3000/addFaculty', {
+				name: values.name,
+				college: values.college,
+				status: values.status,
+				academicStatus: values.academicStatus,
+				birthday: values.birthday.format('YYYY-MM-DD'), // Format the date correctly
+				gender: values.gender,
+				address: values.address || '', // Optional field
+			})
+
+			if (response.data.success) {
+				console.log('Faculty added successfully:', response.data.message)
+				closeModal() // Close modal after submission
+			} else {
+				console.error('Failed to add faculty:', response.data.message)
+			}
+		} catch (error) {
+			console.error('Error submitting faculty details:', error)
+		}
 	}
+
 
 	return (
 		<div className="flex justify-end">
@@ -68,7 +91,7 @@ const AddFaculty = () => {
 					</Form.Item>
 
 					<Form.Item
-						name="employstatus"
+						name="status"
 						label="Employment Status"
 						rules={[
 							{
@@ -79,9 +102,7 @@ const AddFaculty = () => {
 					>
 						<Radio.Group
 							buttonStyle="solid"
-							onChange={(e) =>
-								setFormData({ ...formData, status: e.target.value })
-							}
+							
 						>
 							<Radio.Button value="Full-Time">Full-Time</Radio.Button>
 							<Radio.Button value="Part-Time">Part-Time</Radio.Button>

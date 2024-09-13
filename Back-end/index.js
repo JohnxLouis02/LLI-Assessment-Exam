@@ -111,6 +111,50 @@ app.post('/register', async (req, res) => {
 	}
 })
 
+// Route to add a new faculty member
+app.post('/addFaculty', async (req, res) => {
+    const { name, college, status, academicStatus, birthday, gender, address } = req.body;
+
+    if (!name || !college || !status || !academicStatus || !birthday || !gender) {
+        return res.status(400).json({ success: false, message: 'All fields are required.' });
+    }
+
+    try {
+        let pool = await sql.connect(config);
+
+        // Insert the new faculty into the database
+        const insertFacultyQuery = `
+            INSERT INTO Faculty (name, college, status, academicStatus, birthday, gender, address)
+            VALUES (@Name, @College, @Status, @AcademicStatus, @Birthday, @Gender, @Address)
+        `;
+        await pool.request()
+            .input('Name', sql.VarChar, name)
+            .input('College', sql.VarChar, college)
+            .input('Status', sql.VarChar, status)
+            .input('AcademicStatus', sql.VarChar, academicStatus)
+            .input('Birthday', sql.Date, birthday)
+            .input('Gender', sql.VarChar, gender)
+            .input('Address', sql.VarChar, address || '')  // Optional field
+            .query(insertFacultyQuery);
+
+        return res.status(200).json({ success: true, message: 'Faculty added successfully.' });
+    } catch (err) {
+        console.error('Error adding faculty:', err);
+        return res.status(500).json({ success: false, message: 'Error adding faculty.' });
+    }
+});
+
+app.get('/Faculty', async (req, res) => {
+	try {
+		let pool = await sql.connect(config)
+		let result = await pool.request().query('SELECT * FROM Faculty')
+		res.json(result.recordset)
+		console.log('Data retrieved from the database:', result.recordset)
+	} catch (err) {
+		console.log(err)
+		res.status(500).send('Error retrieving users')
+	}
+})
 
 // Start server port
 app.listen(3000, () => {
