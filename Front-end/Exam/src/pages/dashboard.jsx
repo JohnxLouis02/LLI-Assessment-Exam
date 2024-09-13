@@ -1,54 +1,13 @@
 import React, { useState } from 'react'
-import { Card, Tag, Modal, Avatar } from 'antd'
+import { Card, Tag, Modal, Avatar,Popconfirm, Button } from 'antd'
 import { FaUserCircle } from 'react-icons/fa'
 import { MdLogout } from 'react-icons/md'
+import AddFaculty from '../components/addFaculty'
+import { IoPencil } from 'react-icons/io5'
+import { MdDelete } from 'react-icons/md'
+import FilesNone from '../assets/FilesNone.png'
 
-const data = [
-	{
-		key: '1',
-		name: 'John Brown',
-		age: 32,
-		address: 'New York No. 1 Lake Park',
-		college: 'BSIT',
-		status: 'Full-Time',
-		gender: 'Male',
-		academicStatus: 'PhD',
-		birthday: '1991-05-15',
-	},
-	{
-		key: '2',
-		name: 'Jim Green',
-		age: 42,
-		address: 'London No. 1 Lake Park',
-		college: 'BSIS',
-		status: 'Part-Time',
-		gender: 'Male',
-		birthday: '1981-08-22',
-		academicStatus: 'Master’s',
-	},
-	{
-		key: '3',
-		name: 'Joe Black',
-		age: 32,
-		address: 'Sydney No. 1 Lake Park',
-		college: 'BLIS',
-		status: 'Full-Time',
-		gender: 'Male',
-		birthday: '1981-08-22',
-		academicStatus: 'Bachelor’s',
-	},
-	{
-		key: '4',
-		name: 'Jim Red',
-		age: 32,
-		address: 'London No. 2 Lake Park',
-		college: 'BSIT',
-		status: 'Part-Time',
-		gender: 'Male',
-		birthday: '1981-08-22',
-		academicStatus: 'Master’s',
-	},
-]
+const data = [];
 
 const Dashboard = () => {
 	const [selectedFaculty, setSelectedFaculty] = useState(null)
@@ -65,11 +24,11 @@ const Dashboard = () => {
 		switch (type) {
 			case 'department':
 				switch (value) {
-					case 'BSIT':
+					case 'CICT':
 						return 'blue'
-					case 'BLIS':
+					case 'COE':
 						return 'gold'
-					case 'BSIS':
+					case 'CON':
 						return 'cyan'
 					default:
 						return 'gray'
@@ -114,12 +73,16 @@ const Dashboard = () => {
 						</button>
 					</div>
 				</div>
-
+				{/* Add Faculty */}
+				<div className="mt-2">
+					<AddFaculty />
+				</div>
 				{/* Body */}
-				<div className="pt-3 p-2 mt-10">
+				<div className="pt-0 p-2 mt-3">
 					<p className="font-medium mb-3 ">List of Faculty</p>
 					{data.length === 0 ? (
-						<div className="text-center text-gray-500 flex justify-center items-center">
+						<div className="text-center text-gray-500 h-64 flex justify-center items-center flex-col">
+							<img src={FilesNone} alt="teachers" className="w-[160px] h-auto" />
 							<p className="font-medium">No faculty profiles available....</p>
 							<small></small>
 						</div>
@@ -134,7 +97,7 @@ const Dashboard = () => {
 										maxWidth: '300px',
 									}}
 									onClick={() => openModal(item)} // Open modal on card click
-									className="shadow-sm "
+									className="shadow-sm border-2"
 								>
 									<div className="gap-4">
 										<div className="flex gap-4">
@@ -148,12 +111,14 @@ const Dashboard = () => {
 											</div>
 											<div className="">
 												<p className="font-bold mt-2">{item.name}</p>
-												<Tag color={getTagColor(item.college, 'department')}>
-													<small>{item.college || 'No College'}</small>
-												</Tag>
-												<Tag color={getTagColor(item.status, 'status')}>
-													<small>{item.status || 'No Status'}</small>
-												</Tag>
+												<div className="flex">
+													<Tag color={getTagColor(item.college, 'department')}>
+														<small>{item.college || 'No College'}</small>
+													</Tag>
+													<Tag color={getTagColor(item.status, 'status')}>
+														<small>{item.status || 'No Status'}</small>
+													</Tag>
+												</div>
 											</div>
 										</div>
 										<div>
@@ -189,11 +154,42 @@ const Dashboard = () => {
 			<Modal
 				open={selectedFaculty !== null}
 				onCancel={closeModal}
-				footer={null}
+				footer={[
+					<div key="footer">
+						<div className="flex justify-end gap-4 pt-3">
+							<div>
+								<Button key="edit">
+									Edit
+									<span className="text-base">
+										<IoPencil />
+									</span>
+								</Button>
+							</div>
+							<div>
+								<Popconfirm
+									key="delete"
+									title="Delete the task"
+									description="Are you sure to delete this task?"
+									onConfirm={() => handleDeleteTask(selectedTask.id)}
+									okText="Yes"
+									cancelText="No"
+								>
+									<Button key="delete" type="primary" danger>
+										Delete{' '}
+										<span className="text-base">
+											<MdDelete />
+										</span>
+									</Button>
+								</Popconfirm>
+								{/* <Button key="edit">Edit</Button> */}
+							</div>
+						</div>
+					</div>,
+				]}
 			>
 				{selectedFaculty && (
 					<div>
-						<div className="flex">
+						<div className="flex flex-row">
 							<div className="flex flex-col justify-center w-28 h-28 rounded-full">
 								{/* Profile picture or placeholder */}
 								<Avatar
@@ -209,6 +205,8 @@ const Dashboard = () => {
 											{selectedFaculty.name || 'No Name'}
 										</span>
 									</div>
+									<div></div>
+									{/* <Editfaculty/> */}
 								</div>
 
 								<div className="mt-2 ml-1">
@@ -221,29 +219,30 @@ const Dashboard = () => {
 										<h3>{selectedFaculty.status || 'No Status'}</h3>
 									</Tag>
 								</div>
-								<h3 className="text-lg pb-1 pt-3 ">Personal Information</h3>
-								<div className="flex flex-col gap-1 text-base">
-									<p>
-										<span className="font-medium">Academic Status: </span>
-										{selectedFaculty.academicStatus || 'No Position'}
-									</p>
-									<p>
-										<span className="font-medium">Gender: </span>
-										{selectedFaculty.gender}
-									</p>
-
-									<p>
-										<span className="font-medium">Birthday: </span>
-										{selectedFaculty.birthday}
-									</p>
-									<p>
-										<span className="font-medium">Address: </span>
-										{selectedFaculty.address}
-									</p>
-								</div>
 							</div>
 						</div>
-						{/* Additional details */}
+						<h3 className="text-lg pb-1 font-semibold ">
+							Personal Information
+						</h3>
+						<div className="flex flex-col gap-1 text-base">
+							<p>
+								<span className="font-medium">Academic Status: </span>
+								{selectedFaculty.academicStatus || 'No Position'}
+							</p>
+							<p>
+								<span className="font-medium">Birthday: </span>
+								{selectedFaculty.birthday}
+							</p>
+							<p>
+								<span className="font-medium">Gender: </span>
+								{selectedFaculty.gender}
+							</p>
+
+							<p>
+								<span className="font-medium">Address: </span>
+								{selectedFaculty.address}
+							</p>
+						</div>
 					</div>
 				)}
 			</Modal>

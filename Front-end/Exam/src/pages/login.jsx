@@ -9,7 +9,7 @@ const Login = () => {
 	const onFinish = async (values) => {
 		try {
 			const response = await axios.post('http://localhost:3000/login', values)
-			console.log('Success:', response.data)
+			// console.log('Success:', response.data)
 			if (response.data.success) {
 				navigate('/dashboard')
 				message.success('Login successful')
