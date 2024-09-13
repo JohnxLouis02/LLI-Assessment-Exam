@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Checkbox, Form, Input, message } from 'antd'
-import bg from '../assets/bg_1.jpg'
+import Regbg from "../assets/register_bg.jpg"
 import { Link,useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -42,7 +42,7 @@ const Register = () => {
 		<div className="h-screen bg-gray-300 flex justify-center items-center">
 			<div className="flex justify-center items-center gap-10 bg-white p-10 rounded-md shadow-md">
 				<div>
-					<img src={bg} alt="teachers" className="w-[600px] h-auto" />
+					<img src={Regbg} alt="teachers" className="w-[600px] h-[400px] bg-cover" />
 				</div>
 				<div className="border p-6 rounded-md w-[400px]">
 					<h1 className="font-bold text-center text-xl">

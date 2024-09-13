@@ -73,11 +73,6 @@ const Login = () => {
 						>
 							<Input.Password />
 						</Form.Item>
-
-						<Form.Item name="remember" valuePropName="checked">
-							<Checkbox>Remember me</Checkbox>
-						</Form.Item>
-
 						<div className="flex justify-center">
 							<Form.Item>
 								<Button type="primary" htmlType="submit" className="w-60">

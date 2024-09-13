@@ -18,7 +18,6 @@ const AddFaculty = () => {
 	}
 
 	const handleSubmit = async (values) => {
-		console.log('Faculty Details:', values)
 
 		try {
 			// Make a POST request using Axios to add the faculty
@@ -35,6 +34,7 @@ const AddFaculty = () => {
 			if (response.data.success) {
 				console.log('Faculty added successfully:', response.data.message)
 				closeModal() // Close modal after submission
+				 window.location.reload()
 			} else {
 				console.error('Failed to add faculty:', response.data.message)
 			}

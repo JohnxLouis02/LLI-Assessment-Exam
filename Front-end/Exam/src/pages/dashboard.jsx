@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Tag, Modal, Avatar,Popconfirm, Button } from 'antd'
+import {
+	Card,
+	Tag,
+	Modal,
+	Avatar,
+	Button,
+	Form,
+	Input,
+	Select,
+	DatePicker,
+	Radio,
+} from 'antd'
 import { FaUserCircle } from 'react-icons/fa'
 import { MdLogout } from 'react-icons/md'
 import AddFaculty from '../components/addFaculty'
@@ -7,12 +18,15 @@ import { IoPencil } from 'react-icons/io5'
 import { MdDelete } from 'react-icons/md'
 import FilesNone from '../assets/FilesNone.png'
 import axios from 'axios'
+import Deletefaculty from '../components/Deletefaculty'
 
+const { Option } = Select
 
 const Dashboard = () => {
 	const [data, setData] = useState([]) // Faculty data
 	const [selectedFaculty, setSelectedFaculty] = useState(null)
-
+	const [isEditing, setIsEditing] = useState(false)
+	const [form] = Form.useForm()
 	useEffect(() => {
 		axios
 			.get('http://localhost:3000/Faculty')
@@ -26,7 +40,9 @@ const Dashboard = () => {
 
 	const openModal = (faculty) => {
 		setSelectedFaculty(faculty)
+		setIsEditing(false) // Set to view mode by default
 	}
+
 
 	const closeModal = () => {
 		setSelectedFaculty(null)
@@ -75,8 +91,6 @@ const Dashboard = () => {
 		const today = new Date()
 		const age = today.getFullYear() - birthDate.getFullYear()
 		const monthDiff = today.getMonth() - birthDate.getMonth()
-
-		// Adjust if the birthday hasn't occurred yet this year
 		if (
 			monthDiff < 0 ||
 			(monthDiff === 0 && today.getDate() < birthDate.getDate())
@@ -85,11 +99,42 @@ const Dashboard = () => {
 		}
 		return age
 	}
+	const enterEditMode = () => {
+		setIsEditing(true)
+	}
+
+	// For editing the faculty data
+	const handleSave = (values) => {
+		console.log('Sending PUT request with data:', values)
+		axios
+			.put(`http://localhost:3000/Faculty/${selectedFaculty.id}`, values)
+			.then((response) => {
+				// Update the local data state
+				setData((prevData) =>
+					prevData.map((item) =>
+						item.id === selectedFaculty.id ? { ...item, ...values } : item
+					)
+				)
+				setSelectedFaculty(null)
+				setIsEditing(false)
+			})
+			.catch((error) => {
+				console.error('Error updating faculty data:', error)
+				if (error.response) {
+					console.error('Response data:', error.response.data)
+					console.error('Response status:', error.response.status)
+					console.error('Response headers:', error.response.headers)
+				}
+			})
+	}
+
+
+
 
 
 	return (
 		<div className="min-h-screen p-4 flex justify-center bg-gray-300">
-			<div className="p-4 max-w-3xl flex-1 border rounded-md shadow bg-white">
+			<div className="p-4 max-w-4xl flex-1 border rounded-md shadow bg-white">
 				{/* Navbar */}
 				<div className="flex justify-between gap-5">
 					<div className="pb-4 mt-2 p-2">
@@ -138,10 +183,9 @@ const Dashboard = () => {
 									bordered={true}
 									style={{
 										cursor: 'pointer',
-										maxWidth: '300px',
 									}}
 									onClick={() => openModal(item)} // Open modal on card click
-									className="shadow-sm border-2"
+									className="shadow-sm border-2 max-w-[270px] w-[250px] justify-self-center"
 								>
 									<div className="gap-4">
 										<div className="flex gap-0 sm:flex-row flex-col sm:gap-2">
@@ -200,104 +244,189 @@ const Dashboard = () => {
 			<Modal
 				open={selectedFaculty !== null}
 				onCancel={closeModal}
+				title={
+					<div className="">
+						{' '}
+						{isEditing ? 'Edit Faculty' : 'Faculty Information'}
+					</div>
+				}
 				footer={[
 					<div key="footer">
 						<div className="flex justify-end gap-4 pt-3">
-							<div>
-								<Button key="edit">
-									Edit
-									<span className="text-base">
-										<IoPencil />
-									</span>
+							{isEditing ? (
+								<Button key="save" type="primary" onClick={() => form.submit()}>
+									Save
 								</Button>
-							</div>
-							<div>
-								<Popconfirm
-									key="delete"
-									title="Delete the task"
-									description="Are you sure to delete this task?"
-									onConfirm={() => handleDeleteTask(selectedTask.id)}
-									okText="Yes"
-									cancelText="No"
-								>
-									<Button key="delete" type="primary" danger>
-										Delete{' '}
+							) : (
+								<>
+									<Button key="edit" onClick={enterEditMode}>
+										Edit
 										<span className="text-base">
-											<MdDelete />
+											<IoPencil />
 										</span>
 									</Button>
-								</Popconfirm>
-								{/* <Button key="edit">Edit</Button> */}
-							</div>
+									<Deletefaculty />
+								</>
+							)}
 						</div>
 					</div>,
 				]}
 			>
-				{selectedFaculty && (
-					<div>
-						<div className="flex flex-row">
-							<div className="flex flex-col justify-center w-28 h-28 rounded-full">
-								{/* Profile picture or placeholder */}
-								<Avatar
-									icon={<FaUserCircle />}
-									className="h-20 w-20 rounded-full border-gray-200 border object-cover self-center "
-									style={{ fontSize: '85px' }}
-								/>
-							</div>
-							<div className="ml-4 w-72">
-								<div className="mt-6">
-									<div className="flex flex-row justify-between">
-										<span className="font-bold text-2xl">
-											{selectedFaculty.name || 'No Name'}
-										</span>
+				{selectedFaculty &&
+					(isEditing ? (
+						<Form
+							className="pt-2"
+							form={form}
+							layout="horizontal"
+							initialValues={selectedFaculty}
+							onFinish={handleSave}
+						>
+							<Form.Item
+								name="name"
+								label="Name"
+								rules={[{ message: 'Please enter the faculty name!' }]}
+							>
+								<Input placeholder="Enter faculty name" />
+							</Form.Item>
+
+							<Form.Item
+								name="college"
+								label="College"
+								rules={[{ message: 'Please select the college!' }]}
+							>
+								<Select placeholder="Select college">
+									<Option value="CON">College of Nursing</Option>
+									<Option value="COE">College of Engineering</Option>
+									<Option value="CICT">
+										College of Information and Communications Technology
+									</Option>
+									{/* Add more options as needed */}
+								</Select>
+							</Form.Item>
+
+							<Form.Item
+								name="status"
+								label="Employment Status"
+								rules={[
+									{
+										message: 'Please select Employment Status',
+									},
+								]}
+							>
+								<Radio.Group buttonStyle="solid">
+									<Radio.Button value="Full-Time">Full-Time</Radio.Button>
+									<Radio.Button value="Part-Time">Part-Time</Radio.Button>
+									<Radio.Button value="Contractual">Contractual</Radio.Button>
+								</Radio.Group>
+							</Form.Item>
+
+							<Form.Item
+								name="academicStatus"
+								label="Academic Status"
+								rules={[{ message: 'Please select the college!' }]}
+							>
+								<Select placeholder="Select college">
+									<Option value="Under Graduate">Under Graduate</Option>
+									<Option value="Batchelor's Degree">Bachelor's Degree</Option>
+									<Option value="Master's Degree">Master's Degree</Option>
+									<Option value="Doctoral">Doctoral</Option>
+								</Select>
+							</Form.Item>
+
+							{/* <Form.Item
+								name="birthday"
+								label="Birthday"
+								rules={[
+									{ required: true, message: 'Please select the birthday!' },
+								]}
+							>
+								<DatePicker />
+							</Form.Item> */}
+							<Form.Item
+								name="gender"
+								label="Gender"
+								rules={[
+									{
+										message: 'Please select Employment Status',
+									},
+								]}
+							>
+								<Radio.Group buttonStyle="solid">
+									<Radio.Button value="Male">Male</Radio.Button>
+									<Radio.Button value="Female">Female</Radio.Button>
+									<Radio.Button value="Other">Other</Radio.Button>
+								</Radio.Group>
+							</Form.Item>
+
+							<Form.Item name="address" label="Address">
+								<Input.TextArea placeholder="Enter address" rows={3} />
+							</Form.Item>
+						</Form>
+					) : (
+						<div>
+							<div className="flex flex-row">
+								<div className="flex flex-col justify-center w-28 h-28 rounded-full">
+									{/* Profile picture or placeholder */}
+									<Avatar
+										icon={<FaUserCircle />}
+										className="h-20 w-20 rounded-full border-gray-200 border object-cover self-center "
+										style={{ fontSize: '85px' }}
+									/>
+								</div>
+								<div className="ml-4 w-72">
+									<div className="mt-6">
+										<div className="flex flex-row justify-between">
+											<span className="font-bold text-2xl">
+												{selectedFaculty.name || 'No Name'}
+											</span>
+										</div>
+										<div></div>
+										{/* <Editfaculty/> */}
 									</div>
-									<div></div>
-									{/* <Editfaculty/> */}
-								</div>
 
-								<div className="mt-2 ml-1">
-									<Tag
-										color={getTagColor(selectedFaculty.college, 'department')}
-									>
-										<h3>{selectedFaculty.college || 'No College'}</h3>
-									</Tag>
-									<Tag color={getTagColor(selectedFaculty.status, 'status')}>
-										<h3>{selectedFaculty.status || 'No Status'}</h3>
-									</Tag>
+									<div className="mt-2 ml-1">
+										<Tag
+											color={getTagColor(selectedFaculty.college, 'department')}
+										>
+											<h3>{selectedFaculty.college || 'No College'}</h3>
+										</Tag>
+										<Tag color={getTagColor(selectedFaculty.status, 'status')}>
+											<h3>{selectedFaculty.status || 'No Status'}</h3>
+										</Tag>
+									</div>
 								</div>
 							</div>
-						</div>
-						<h3 className="text-lg pb-1 font-semibold ">
-							Personal Information
-						</h3>
-						<div className="flex flex-col gap-1 text-base">
-							<p>
-								<span className="font-medium">Academic Status: </span>
-								{selectedFaculty.academicStatus || 'No Position'}
-							</p>
-							<p>
-								<span className="font-medium">Birthday: </span>
-								{formatBirthday(selectedFaculty.birthday)}
-							</p>
-							<p>
-								<span className="font-medium">Age: </span>
-								{selectedFaculty.birthday
-									? `${calculateAge(selectedFaculty.birthday)} years old`
-									: 'No Age'}
-							</p>
+							<h3 className="text-lg pb-1 font-semibold ">
+								Personal Information
+							</h3>
+							<div className="flex flex-col gap-1 text-base">
+								<p>
+									<span className="font-medium">Academic Status: </span>
+									{selectedFaculty.academicStatus || 'No Position'}
+								</p>
+								<p>
+									<span className="font-medium">Birthday: </span>
+									{formatBirthday(selectedFaculty.birthday)}
+								</p>
+								<p>
+									<span className="font-medium">Age: </span>
+									{selectedFaculty.birthday
+										? `${calculateAge(selectedFaculty.birthday)} years old`
+										: 'No Age'}
+								</p>
 
-							<p>
-								<span className="font-medium">Gender: </span>
-								{selectedFaculty.gender}
-							</p>
+								<p>
+									<span className="font-medium">Gender: </span>
+									{selectedFaculty.gender}
+								</p>
 
-							<p>
-								<span className="font-medium">Address: </span>
-								{selectedFaculty.address}
-							</p>
+								<p>
+									<span className="font-medium">Address: </span>
+									{selectedFaculty.address}
+								</p>
+							</div>
 						</div>
-					</div>
-				)}
+					))}
 			</Modal>
 		</div>
 	)

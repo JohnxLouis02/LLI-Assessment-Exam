@@ -2,6 +2,7 @@ const express = require('express')
 const sql = require('mssql')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt')
 
 
 const app = express()
@@ -43,26 +44,48 @@ app.get('/Users', async (req, res) => {
 })
 
 // Route to authenticate users
+// Route to authenticate users
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body
+	const { email, password } = req.body
 
-  try {
-    let pool = await sql.connect(config)
-    let result = await pool.request()
-      .input('email', sql.VarChar, email)
-      .input('password', sql.VarChar, password)
-      .query('SELECT * FROM Users WHERE email = @email AND password = @password')
+	try {
+		// Step 1: Fetch user from the database by email
+		let pool = await sql.connect(config)
+		let result = await pool
+			.request()
+			.input('Email', sql.VarChar, email)
+			.query('SELECT * FROM Users WHERE Email = @Email')
 
-    if (result.recordset.length > 0) {
-      res.json({ success: true, message: 'Login successful', user: result.recordset[0] })
-    } else {
-      res.json({ success: false, message: 'Invalid email or password' })
-    }
-  } catch (err) {
-    console.log(err)
-    res.status(500).send('Error during login')
-  }
+		if (result.recordset.length === 0) {
+			// User not found
+			return res
+				.status(400)
+				.json({ success: false, message: 'Invalid credentials' })
+		}
+
+		const user = result.recordset[0]
+
+		// Step 2: Compare the input password with the stored hashed password
+		const isMatch = await bcrypt.compare(password, user.Password)
+
+		if (!isMatch) {
+			return res
+				.status(400)
+				.json({ success: false, message: 'Invalid credentials' })
+		}
+
+		// Step 3: If password matches, login success
+		res.json({
+			success: true,
+			message: 'Login successful',
+			userId: user.UserID,
+		})
+	} catch (error) {
+		console.error('Error during login:', error)
+		res.status(500).json({ success: false, message: 'Server error' })
+	}
 })
+
 
 app.post('/register', async (req, res) => {
 	const { email, password } = req.body
@@ -77,7 +100,7 @@ app.post('/register', async (req, res) => {
 		let pool = await sql.connect(config)
 
 		// Check if the user already exists
-		const checkUserQuery = `SELECT * FROM Users WHERE email = @Email`
+		const checkUserQuery = 'SELECT * FROM Users WHERE email = @Email'
 		let checkUser = await pool
 			.request()
 			.input('Email', sql.VarChar, email)
@@ -89,22 +112,23 @@ app.post('/register', async (req, res) => {
 				.json({ success: false, message: 'User already exists.' })
 		}
 
+		// Hash the password before storing it
+		const hashedPassword = await bcrypt.hash(password, 10)
+
 		// Insert the new user into the database
-		const insertUserQuery = `
-			INSERT INTO Users (email, password)
-			VALUES (@Email, @Password)
-		`
+		const insertUserQuery =
+			'INSERT INTO Users (email, password) VALUES (@Email, @Password)'
 		await pool
 			.request()
 			.input('Email', sql.VarChar, email)
-			.input('Password', sql.VarChar, password)
+			.input('Password', sql.VarChar, hashedPassword)
 			.query(insertUserQuery)
 
 		return res
 			.status(200)
 			.json({ success: true, message: 'User registered successfully.' })
 	} catch (err) {
-		console.error('Error:', err)
+		console.error('Error registering user:', err)
 		return res
 			.status(500)
 			.json({ success: false, message: 'Error registering user.' })
@@ -155,6 +179,70 @@ app.get('/Faculty', async (req, res) => {
 		res.status(500).send('Error retrieving users')
 	}
 })
+
+// Route to update a faculty member
+app.put('/Faculty/:id', async (req, res) => {
+	const id = req.params.id
+	const { name, college, status, academicStatus, birthday, gender, address } =
+		req.body
+
+	// Log the data received from the front end
+	console.log('Data received from front end:', req.body)
+
+	try {
+		let pool = await sql.connect(config)
+
+		// Only update the fields that are provided in the request body
+		const updateFields = []
+		if (name) updateFields.push('name = @Name')
+		if (college) updateFields.push('college = @College')
+		if (status) updateFields.push('status = @Status')
+		if (academicStatus) updateFields.push('academicStatus = @AcademicStatus')
+		if (birthday) updateFields.push('birthday = @Birthday')
+		if (gender) updateFields.push('gender = @Gender')
+		if (address !== undefined) updateFields.push('address = @Address')
+
+		if (updateFields.length === 0) {
+			return res
+				.status(400)
+				.json({ success: false, message: 'No fields to update.' })
+		}
+
+		const updateFacultyQuery = `
+            UPDATE Faculty
+            SET ${updateFields.join(', ')}
+            WHERE id = @Id
+        `
+
+		const request = pool.request()
+		if (name) request.input('Name', sql.VarChar, name)
+		if (college) request.input('College', sql.VarChar, college)
+		if (status) request.input('Status', sql.VarChar, status)
+		if (academicStatus)
+			request.input('AcademicStatus', sql.VarChar, academicStatus)
+		if (birthday) request.input('Birthday', sql.Date, birthday)
+		if (gender) request.input('Gender', sql.VarChar, gender)
+		if (address !== undefined)
+			request.input('Address', sql.VarChar, address || '')
+		request.input('Id', sql.Int, id)
+
+		await request.query(updateFacultyQuery)
+
+		return res
+			.status(200)
+			.json({ success: true, message: 'Faculty updated successfully.' })
+	} catch (err) {
+		console.error('Error updating faculty:', err)
+		return res
+			.status(500)
+			.json({ success: false, message: 'Error updating faculty.' })
+	}
+})
+
+
+
+
+
 
 // Start server port
 app.listen(3000, () => {
