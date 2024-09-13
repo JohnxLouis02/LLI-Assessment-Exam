@@ -26,7 +26,7 @@ const AddFaculty = () => {
 				college: values.college,
 				status: values.status,
 				academicStatus: values.academicStatus,
-				birthday: values.birthday.format('YYYY-MM-DD'), // Format the date correctly
+				birthday: values.birthday, // Format the date correctly
 				gender: values.gender,
 				address: values.address || '', // Optional field
 			})
@@ -100,10 +100,7 @@ const AddFaculty = () => {
 							},
 						]}
 					>
-						<Radio.Group
-							buttonStyle="solid"
-							
-						>
+						<Radio.Group buttonStyle="solid">
 							<Radio.Button value="Full-Time">Full-Time</Radio.Button>
 							<Radio.Button value="Part-Time">Part-Time</Radio.Button>
 							<Radio.Button value="Contractual">Contractual</Radio.Button>
@@ -128,7 +125,10 @@ const AddFaculty = () => {
 						label="Birthday"
 						rules={[{ required: true, message: 'Please select the birthday!' }]}
 					>
-						<DatePicker />
+						<Input
+							className="w-full p-2 border border-gray-300 rounded "
+							type="date"
+						/>
 					</Form.Item>
 					<Form.Item
 						name="gender"

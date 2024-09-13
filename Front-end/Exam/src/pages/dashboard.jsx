@@ -8,7 +8,8 @@ import {
 	Form,
 	Input,
 	Select,
-	DatePicker,
+	message,
+	Popconfirm,
 	Radio,
 } from 'antd'
 import { FaUserCircle } from 'react-icons/fa'
@@ -18,7 +19,8 @@ import { IoPencil } from 'react-icons/io5'
 import { MdDelete } from 'react-icons/md'
 import FilesNone from '../assets/FilesNone.png'
 import axios from 'axios'
-import Deletefaculty from '../components/Deletefaculty'
+import dayjs from 'dayjs';
+
 
 const { Option } = Select
 
@@ -42,7 +44,6 @@ const Dashboard = () => {
 		setSelectedFaculty(faculty)
 		setIsEditing(false) // Set to view mode by default
 	}
-
 
 	const closeModal = () => {
 		setSelectedFaculty(null)
@@ -105,7 +106,6 @@ const Dashboard = () => {
 
 	// For editing the faculty data
 	const handleSave = (values) => {
-		console.log('Sending PUT request with data:', values)
 		axios
 			.put(`http://localhost:3000/Faculty/${selectedFaculty.id}`, values)
 			.then((response) => {
@@ -115,22 +115,32 @@ const Dashboard = () => {
 						item.id === selectedFaculty.id ? { ...item, ...values } : item
 					)
 				)
+				message.success('Faculty Data Edited successfully')
 				setSelectedFaculty(null)
 				setIsEditing(false)
 			})
 			.catch((error) => {
 				console.error('Error updating faculty data:', error)
-				if (error.response) {
-					console.error('Response data:', error.response.data)
-					console.error('Response status:', error.response.status)
-					console.error('Response headers:', error.response.headers)
-				}
 			})
 	}
 
-
-
-
+	// For deleting the faculty data
+	const handleDelete = () => {
+		axios
+			.delete(`http://localhost:3000/Faculty/${selectedFaculty.id}`)
+			.then((response) => {
+				// Update the local data state
+				setData((prevData) =>
+					prevData.filter((item) => item.id !== selectedFaculty.id)
+				)
+				message.success('Faculty Data Deleted successfully')
+				setSelectedFaculty(null)
+				 window.location.reload()
+			})
+			.catch((error) => {
+				console.error('Error deleting faculty data:', error)
+			})
+	}
 
 	return (
 		<div className="min-h-screen p-4 flex justify-center bg-gray-300">
@@ -265,7 +275,18 @@ const Dashboard = () => {
 											<IoPencil />
 										</span>
 									</Button>
-									<Deletefaculty />
+									<Popconfirm
+										title="Delete Faculty"
+										description="Are you sure you want to delete this faculty?"
+										onConfirm={handleDelete} // Set the onConfirm prop to call handleDelete
+									>
+										<Button type="primary" danger>
+											Delete{' '}
+											<span className="text-base">
+												<MdDelete />
+											</span>
+										</Button>
+									</Popconfirm>
 								</>
 							)}
 						</div>
@@ -333,15 +354,26 @@ const Dashboard = () => {
 								</Select>
 							</Form.Item>
 
-							{/* <Form.Item
+							<Form.Item
 								name="birthday"
 								label="Birthday"
-								rules={[
-									{ required: true, message: 'Please select the birthday!' },
-								]}
+								rules={[{ message: 'Please select your birthday!' }]}
 							>
-								<DatePicker />
-							</Form.Item> */}
+								<Input
+									className="w-full p-1 border border-gray-300 rounded bg-white"
+									type="date" // Change input type to datetime-local
+									value={
+										form.getFieldValue('birthday')
+											? dayjs(form.getFieldValue('birthday')).format(
+													'YYYY-MM-DD'
+											  )
+											: ''
+									}
+									onChange={(e) =>
+										form.setFieldsValue({ birthday: e.target.value })
+									}
+								/>
+							</Form.Item>
 							<Form.Item
 								name="gender"
 								label="Gender"

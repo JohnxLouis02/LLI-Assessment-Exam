@@ -186,13 +186,12 @@ app.put('/Faculty/:id', async (req, res) => {
 	const { name, college, status, academicStatus, birthday, gender, address } =
 		req.body
 
-	// Log the data received from the front end
+	// display the data received from the front end
 	console.log('Data received from front end:', req.body)
 
 	try {
 		let pool = await sql.connect(config)
 
-		// Only update the fields that are provided in the request body
 		const updateFields = []
 		if (name) updateFields.push('name = @Name')
 		if (college) updateFields.push('college = @College')
@@ -239,6 +238,25 @@ app.put('/Faculty/:id', async (req, res) => {
 	}
 })
 
+// Route to delete a faculty member
+app.delete('/Faculty/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        let pool = await sql.connect(config);
+
+        // Delete the faculty member from the database
+        const deleteFacultyQuery = 'DELETE FROM Faculty WHERE id = @Id';
+        await pool.request()
+            .input('Id', sql.Int, id)
+            .query(deleteFacultyQuery);
+
+        return res.status(200).json({ success: true, message: 'Faculty deleted successfully.' });
+    } catch (err) {
+        console.error('Error deleting faculty:', err);
+        return res.status(500).json({ success: false, message: 'Error deleting faculty.' });
+    }
+});
 
 
 
